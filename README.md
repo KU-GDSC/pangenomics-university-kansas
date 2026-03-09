@@ -6,14 +6,19 @@ This one-day workshop, held on March 13, 2026 at the University of Kansas, intro
 
 ## Instructor
 
-**Andrea Guarracino, PhD**  
-Bioinnovation and Genome Sciences Division,  
-The Translational Genomics Research Institute (TGen),  
-Phoenix, AZ, USA  
+<table><tr><td>
+
+**Andrea Guarracino, PhD**
+Bioinnovation and Genome Sciences Division,
+The Translational Genomics Research Institute (TGen),
+Phoenix, AZ, USA
+
+</td><td>
 
 [<img src="https://guarracinolab.github.io/images/GUARRACINOxLAB.png" alt="GuarracinoLab" height="50">](https://guarracinolab.github.io/)
-
 [GuarracinoLab website](https://guarracinolab.github.io/)
+
+</td></tr></table>
 
 
 ## Pangenome graph building with `pggb`
@@ -22,10 +27,21 @@ Phoenix, AZ, USA
 
 ![pggb workflow](images/pggb-workflow.png)
 
+Pull the `pggb` Docker image, which contains all the tools needed for this workshop (`pggb`, `odgi`, `wfmash`, `seqwish`, `smoothxg`, `bedtools`, `samtools`, and more):
+
+    docker pull ghcr.io/pangenome/pggb:20260309041903fa4434
+
+Clone the `pggb` and `odgi` repositories to get the data files used in this workshop:
+
     cd $HOME
     git clone https://github.com/pangenome/pggb.git
-    git clone https://github.com/waveygang/wfmash
     git clone https://github.com/pangenome/odgi.git
+
+Start an interactive session inside the Docker container, mounting your home directory:
+
+    docker run -it -v $HOME:$HOME -w $HOME -e HOME=$HOME ghcr.io/pangenome/pggb:20260309041903fa4434 /bin/bash
+
+All the following commands should be run inside this Docker container.
 
 ### HLA pangenome graphs
 
@@ -46,7 +62,7 @@ It is used to determine the right partial order alignment (POA) problem size for
 
 How many pairwise alignments were used to build the graph (take a look at the `PAF` output)? Visualize the alignments:
 
-    $HOME/wfmash/scripts/paf2dotplot png large $HOME/out_DRB1_3123.1/*alignments.wfmash.paf
+    paf2dotplot png large $HOME/out_DRB1_3123.1/*alignments.wfmash.paf
 
 The last command will generate a `out.png` file with a visualization of the alignments.
 
@@ -156,7 +172,7 @@ Choose another HLA gene from the `data` folder (`A-3105.fa.gz` for example) and 
 Genetic and epidemiological studies have identified lipoprotein(a) as a risk factor for atherosclerosis and related diseases, such as coronary heart disease and stroke.
 
 Try to make LPA pangenome graphs.
-The input sequences are in `data/LPA/LPA.fa.gz`.
+The input sequences are in `$HOME/pggb/data/LPA/LPA.fa.gz`.
 Sequences in this locus have a peculiarity: which one?
 Hint: visualize the alignments and take a look at the graph layout with `Bandage` and/or in the `*.draw_multiqc.png` files.
 The `*.draw_multiqc.png` files contain static representations of the graph layout.
@@ -369,7 +385,7 @@ We can clean this up by using `odgi flip`, which flips paths around if they tend
 
     odgi flip -i $HOME/chr6.C4.genes.og -o $HOME/chr6.C4.genes.flip.og -t 16 -P
     
-    odgi untangle -i $HOME/chr6.C4.genes.flip.og -R $HOME/chr6.C4.gene.names.txt -j 0.5 -t 16 -g -P > $HOME/chr6.C4.gene.gggenes.tsv
+    odgi untangle -i $HOME/chr6.C4.genes.flip.og -R $HOME/chr6.C4.gene.names.txt -j 0.5 -t 16 -g -P > $HOME/chr6.C4.gene.gggenes.flip.tsv
 
 Plot the new results:
 
@@ -383,7 +399,6 @@ Let's download the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) fo
 
     wget https://garrisonlab.s3.amazonaws.com/hprcv2/tpas/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa
     wget https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/B4174A5F-F20E-4DCF-8470-F8A907B640BC--HPRCv2_0.6.1_pr_agc_submission/HPRC_r2_assemblies_0.6.1.agc
-
 
 Then, we can use `impg` to query the alignments to project the C4 locus onto the HPRCv2 assemblies:
 
@@ -420,7 +435,7 @@ But we are working in integrating explicit pangenome graph construction, so we c
       --subset-sequence-list <(sort chr6.C4.impg.bed | head -n 20 | cut -f 1) \
       > chr6.C4.impg.gfa
 
-Trying with all sequences: (it will take ~15 minutes):
+Trying with all sequences (it will take ~15 minutes):
 
     impg query \
       -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
