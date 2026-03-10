@@ -29,7 +29,7 @@ Phoenix, AZ, USA
 
 Pull the `pggb` Docker image, which contains all the tools needed for this workshop (`pggb`, `odgi`, `wfmash`, `seqwish`, `smoothxg`, `bedtools`, `samtools`, and more):
 
-    docker pull ghcr.io/pangenome/pggb:20260309041903fa4434
+    docker pull ghcr.io/pangenome/pggb:2026030920022667bf93
 
 Clone the `pggb` and `odgi` repositories to get the data files used in this workshop:
 
@@ -39,7 +39,7 @@ Clone the `pggb` and `odgi` repositories to get the data files used in this work
 
 Start an interactive session inside the Docker container, mounting your home directory:
 
-    docker run -it -v $HOME:$HOME -w $HOME -e HOME=$HOME ghcr.io/pangenome/pggb:20260309041903fa4434 /bin/bash
+    docker run -it -v $HOME:$HOME -w $HOME -e HOME=$HOME ghcr.io/pangenome/pggb:2026030920022667bf93 /bin/bash
 
 All the following commands should be run inside this Docker container.
 
@@ -395,13 +395,13 @@ What is changed?
 
 ### Hints on implicit pangenomics
 
-Let's download the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) format](https://github.com/AndreaGuarracino/tpa) and the HPRCv2 assemblies in AGC format.
+Let's download the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) format](https://github.com/AndreaGuarracino/tpa) at [this link](https://drive.google.com/file/d/1TB80ngJJ-aIhpwotb2FM-j0Sna41nWJ7/view?usp=sharing) and the HPRCv2 assemblies in AGC format.
 
-    wget https://garrisonlab.s3.amazonaws.com/hprcv2/tpas/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa
     wget https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/B4174A5F-F20E-4DCF-8470-F8A907B640BC--HPRCv2_0.6.1_pr_agc_submission/HPRC_r2_assemblies_0.6.1.agc
 
 Then, we can use `impg` to query the alignments to project the C4 locus onto the HPRCv2 assemblies:
 
+    # The first time you run it, the command will be a bit slower because it needs to build index files, which will be used for all subsequent queries.
     impg query \
         -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
         --sequence-files HPRC_r2_assemblies_0.6.1.agc \
@@ -410,6 +410,7 @@ Then, we can use `impg` to query the alignments to project the C4 locus onto the
 
 We can also extract the sequences of the projected C4 locus:
 
+    # We take a subset of the sequences to speed up the process
     impg query \
       -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
       --sequence-files HPRC_r2_assemblies_0.6.1.agc \
@@ -421,7 +422,7 @@ We can also extract the sequences of the projected C4 locus:
 And then we can build a pangenome graph from the extracted sequences:
 
     samtools faidx chr6.C4.impg.fasta
-    pggb -i chr6.C4.impg.fasta -o chr6.C4.impg
+    pggb -i chr6.C4.impg.fasta -o chr6.C4.impg.pggb
 
 ![chr6.C4.impg](images/chr6.C4.impg.fasta.3d73c94.11fba48.fe8a7db.smooth.final.og.lay.draw_multiqc.png)
 
@@ -446,9 +447,9 @@ Trying with all sequences (it will take ~15 minutes):
       -t 8 \
       > chr6.C4.impg.all.gfa
 
-`sparsify auto` will automatically apply a sparsification strategy to reduce the number of alignments (remember that all-vs-all alignments means O(N^2) alignments, where N is the number of sequences).
+`sparsify auto` will automatically apply a sparsification strategy to reduce the number of alignments to compute (remember that all-vs-all alignments means O(N^2) alignments, where N is the number of sequences).
 
-Let's apply the "next generation" of static graph visualization with [`gfalook`](https://github.com/pangenome/gfalook):
+Let's apply the "next generation" of static graph visualization with [`gfalook`](https://github.com/pangenome/gfalook) by clustering the paths in the graph:
 
     gfalook -i chr6.C4.impg.all.gfa -o chr6.C4.impg.all.dendogram.png -k -D -m -B Spectral:4
 
