@@ -393,6 +393,8 @@ Plot the new results:
 
 What is changed?
 
+![C4 untangle explained](images/c4.gggenes.flip.explained.png)
+
 ### Hints on implicit pangenomics
 
 Let's download the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) format](https://github.com/AndreaGuarracino/tpa) at [this link](https://drive.google.com/file/d/1TB80ngJJ-aIhpwotb2FM-j0Sna41nWJ7/view?usp=sharing) and the HPRCv2 assemblies in AGC format.
