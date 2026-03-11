@@ -8,22 +8,19 @@ This one-day workshop, held on March 13, 2026 at the University of Kansas, intro
 
 <table><tr><td>
 
-**Andrea Guarracino, PhD**
-Bioinnovation and Genome Sciences Division,
-The Translational Genomics Research Institute (TGen),
+**Andrea Guarracino, PhD**<br>
+Bioinnovation and Genome Sciences Division,<br>
+The Translational Genomics Research Institute (TGen),<br>
 Phoenix, AZ, USA
 
-</td><td>
+</td><td align="center">
 
-[<img src="https://guarracinolab.github.io/images/GUARRACINOxLAB.png" alt="GuarracinoLab" height="50">](https://guarracinolab.github.io/)
+[<img src="https://guarracinolab.github.io/images/GUARRACINOxLAB.png" alt="GuarracinoLab" height="50">](https://guarracinolab.github.io/)<br>
 [GuarracinoLab website](https://guarracinolab.github.io/)
 
 </td></tr></table>
 
-
-## Pangenome graph building with `pggb`
-
-### Getting started
+## Getting started
 
 ![pggb workflow](images/pggb-workflow.png)
 
@@ -43,7 +40,7 @@ Start an interactive session inside the Docker container, mounting your home dir
 
 All the following commands should be run inside this Docker container.
 
-### HLA pangenome graphs
+## HLA pangenome graphs
 
 The [human leukocyte antigen (HLA)](https://en.wikipedia.org/wiki/Human_leukocyte_antigen) system is a complex of genes on chromosome 6 in humans which encode cell-surface proteins responsible for the regulation of the immune system.
 
@@ -51,13 +48,14 @@ Let's build a pangenome graph from a collection of sequences of the DRB1-3123 ge
 
     pggb -i $HOME/pggb/data/HLA/DRB1-3123.fa.gz -o $HOME/out_DRB1_3123.1 -n 12
 
-Why did we specify `-n 12`?
+Why did we specify `-n 12`? What happens if we don't specify it?
 
 <details>
   <summary>Click me for the answer</summary>
 
 This parameter is important for the graph normalization with `smoothxg`.
 It is used to determine the right partial order alignment (POA) problem size for the multiple sequence alignments.
+This value can be automatically obtained from the sequence names if they respect the [PanSN specification](https://github.com/pangenome/PanSN-specification), 
 </details>
 
 How many pairwise alignments were used to build the graph (take a look at the `PAF` output)? Visualize the alignments:
@@ -166,7 +164,7 @@ Higher values reduce sensitivity, but lead to simpler graphs.
 
 Choose another HLA gene from the `data` folder (`A-3105.fa.gz` for example) and explore how the statistics of the resulting graph change as you change the `p` parameter.
 
-### LPA pangenome graphs
+## LPA pangenome graphs
 
 [Lipoprotein(a) (LPA)](https://en.wikipedia.org/wiki/Lipoprotein(a)) is a low-density lipoprotein variant containing a protein called apolipoprotein(a).
 Genetic and epidemiological studies have identified lipoprotein(a) as a risk factor for atherosclerosis and related diseases, such as coronary heart disease and stroke.
@@ -178,7 +176,7 @@ Hint: visualize the alignments and take a look at the graph layout with `Bandage
 The `*.draw_multiqc.png` files contain static representations of the graph layout.
 They are similar to what `Bandage` shows, probably a little less attractive, but such visualizations can scale to larger pangenomic graphs.
 
-### MHC locus
+## MHC locus
 
 Download the HPRC pangenome graph of the human chromosome 6 in GFA format, decompress it, and convert it to a graph in `odgi` format.
 
@@ -244,7 +242,7 @@ Visualize the layout with `odgi draw`:
 
     odgi draw -i $HOME/chr6.pan.MHC.og -c $HOME/chr6.pan.MHC.lay -p $HOME/chr6.pan.MHC.layout.png -->
 
-### C4 locus
+## C4 locus
 
 The MHC locus includes the complement component 4 (C4) region, which encodes proteins involved in the complement system.
 In humans, the C4 gene exists as 2 functionally distinct genes, C4A and C4B, which both vary in structure and **copy number** ([Sekar et al., 2016](https://doi.org/10.1038/nature16549)).
@@ -316,7 +314,7 @@ Use `odgi layout` and `odgi draw` to compute and visualize the layout of the C4 
 
 The HERV sequence may be present or absent in the C4 regions across haplotypes: how does this reflect on the structure of the graph layout?
 
-### Graph untangling
+## Graph untangling
 
 To obtain another view of a collapsed locus, we can apply `odgi untangle` to linearize the relationships between paths.
 
@@ -334,7 +332,7 @@ with information about the quality of the match (`score`), the strand (`inv`), t
 <!-- Try to visualize the results with `ggplot2` in R (hint: the intervals in the BED file can be displayed with `geom_segment`).
 Compare such a visualization with the visualization obtained with the `odgi viz` coloring by depth. -->
 
-### Annotation injection
+## Annotation injection
 
 A pangenome graph represents the alignment of many genome sequences.
 By embedding gene annotations into the graph as paths, we align them with all other paths.
@@ -395,7 +393,7 @@ What is changed?
 
 ![C4 untangle explained](images/c4.gggenes.flip.explained.png)
 
-### Hints on implicit pangenomics
+## Implicit pangenomics
 
 Let's download the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) format](https://github.com/AndreaGuarracino/tpa) at [this link](https://drive.google.com/file/d/1TB80ngJJ-aIhpwotb2FM-j0Sna41nWJ7/view?usp=sharing) and the HPRCv2 assemblies in AGC format.
 
