@@ -314,85 +314,6 @@ Use `odgi layout` and `odgi draw` to compute and visualize the layout of the C4 
 
 The HERV sequence may be present or absent in the C4 regions across haplotypes: how does this reflect on the structure of the graph layout?
 
-## Graph untangling
-
-To obtain another view of a collapsed locus, we can apply `odgi untangle` to linearize the relationships between paths.
-
-To untangle the C4 graph, execute:
-
-    (echo query.name query.start query.end ref.name ref.start ref.end score inv self.cov n.th |
-      tr ' ' '\t'; odgi untangle -i $HOME/chr6.pan.C4.sorted.og -r $(odgi paths -i $HOME/chr6.pan.C4.sorted.og -L | grep grch38) -t 16 -m 256 -P |
-      bedtools sort -i - ) | awk '$8 == "-" { x=$6; $6=$5; $5=x; } { print }' |
-      tr ' ' '\t'   > $HOME/chr6.pan.C4.sorted.untangle.bed
-
-Take a look at the `chr6.pan.C4.sorted.untangle.bed` file.
-For each segment in the query (`query.name`, `query.start`, and `query.end` columns), the best match on the reference is reported (`ref.name`, `ref.start`, and `ref.end`),
-with information about the quality of the match (`score`), the strand (`inv`), the copy number status (`self.cov`), and its rank over all possible matches (`n.th`).
-
-<!-- Try to visualize the results with `ggplot2` in R (hint: the intervals in the BED file can be displayed with `geom_segment`).
-Compare such a visualization with the visualization obtained with the `odgi viz` coloring by depth. -->
-
-## Annotation injection
-
-A pangenome graph represents the alignment of many genome sequences.
-By embedding gene annotations into the graph as paths, we align them with all other paths.
-
-We start with gene annotations against the GRCh38 reference.
-Our annotations are against the full `grch38#chr6`, in `test/chr6.C4.bed`.
-Take a look at the first column in the annotation file
-
-    head $HOME/odgi/test/chr6.C4.bed
-
-However, the C4 locus graph `chr6.c4.gfa` is over the reference range, that is `grch38#chr6:31972046-32055647`.
-With `odgi paths` we can take a look at the names of the paths in the graph:
-
-    odgi paths -i $HOME/chr6.pan.C4.sorted.og -L | grep grc
-
-So, we must adjust the annotations to match the subgraph to ensure that path names and coordinates exactly correspond between the BED and GFA.
-We do so using `odgi procbed`, which cuts BED records to fit within a given subgraph:
-
-    odgi procbed -i $HOME/chr6.pan.C4.sorted.og -b $HOME/odgi/test/chr6.C4.bed > $HOME/chr6.C4.adj.bed
-
-The coordinate space now matches that of the C4 subgraph.
-Now, we can inject these annotations into the graph:
-
-    odgi inject -i $HOME/chr6.pan.C4.sorted.og -b $HOME/chr6.C4.adj.bed -o $HOME/chr6.C4.genes.og -P
-
-Use `odgi viz` to visualize the new subgraph with the injected paths.
-
-We now use the gene names and the `gggenes` output format from `odgi untangle` to obtain a gene arrow map. We specify the injected paths as target paths:
-
-    odgi paths -i $HOME/chr6.C4.genes.og -L | tail -4 > $HOME/chr6.C4.gene.names.txt
-
-    odgi untangle -R $HOME/chr6.C4.gene.names.txt -i $HOME/chr6.C4.genes.og -j 0.5 -g -t 16 -P > $HOME/chr6.C4.gene.gggenes.tsv
-
-We use `-j 0.5` to filter out low-quality matches.
-
-If you have `R` installed on your local machine, you can plot `odgi untangle` output with `gggenes`:
-
-    require(ggplot2)
-    require(gggenes)
-    x <- read.delim('$HOME/chr6.C4.gene.gggenes.tsv')
-    ggplot(x, aes(xmin=start, xmax=end, y=molecule, fill=gene, forward=strand)) + geom_gene_arrow()
-    ggsave('c4.gggenes.png', height=14, width=14)
-
-![C4 untangle](images/c4.gggenes.png)
-
-The plot will look a bit odd because some of the paths are in reverse complement orientation relative to the annotations.
-We can clean this up by using `odgi flip`, which flips paths around if they tend to be in the reverse complement orientation relative to the graph:
-
-    odgi flip -i $HOME/chr6.C4.genes.og -o $HOME/chr6.C4.genes.flip.og -t 16 -P
-    
-    odgi untangle -i $HOME/chr6.C4.genes.flip.og -R $HOME/chr6.C4.gene.names.txt -j 0.5 -t 16 -g -P > $HOME/chr6.C4.gene.gggenes.flip.tsv
-
-Plot the new results:
-
-![C4 untangle](images/c4.gggenes.flip.png)
-
-What is changed?
-
-![C4 untangle explained](images/c4.gggenes.flip.explained.png)
-
 ## Implicit pangenomics
 
 Let's download the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) format](https://github.com/AndreaGuarracino/tpa) at [this link](https://drive.google.com/file/d/1TB80ngJJ-aIhpwotb2FM-j0Sna41nWJ7/view?usp=sharing) and the HPRCv2 assemblies in AGC format.
@@ -460,3 +381,83 @@ Too many paths. Let's select a representative for each cluster:
     gfalook -i chr6.C4.impg.all.gfa -o chr6.C4.impg.all.dendogram.repr.png -k -D -m -B Spectral:4 -K
 
 ![chr6.C4.impg.all.dendogram.repr](images/chr6.C4.impg.all.dendogram.repr.png)
+
+
+## BONUS: Graph untangling
+
+To obtain another view of a collapsed locus, we can apply `odgi untangle` to linearize the relationships between paths.
+
+To untangle the C4 graph, execute:
+
+    (echo query.name query.start query.end ref.name ref.start ref.end score inv self.cov n.th |
+      tr ' ' '\t'; odgi untangle -i $HOME/chr6.pan.C4.sorted.og -r $(odgi paths -i $HOME/chr6.pan.C4.sorted.og -L | grep grch38) -t 16 -m 256 -P |
+      bedtools sort -i - ) | awk '$8 == "-" { x=$6; $6=$5; $5=x; } { print }' |
+      tr ' ' '\t'   > $HOME/chr6.pan.C4.sorted.untangle.bed
+
+Take a look at the `chr6.pan.C4.sorted.untangle.bed` file.
+For each segment in the query (`query.name`, `query.start`, and `query.end` columns), the best match on the reference is reported (`ref.name`, `ref.start`, and `ref.end`),
+with information about the quality of the match (`score`), the strand (`inv`), the copy number status (`self.cov`), and its rank over all possible matches (`n.th`).
+
+<!-- Try to visualize the results with `ggplot2` in R (hint: the intervals in the BED file can be displayed with `geom_segment`).
+Compare such a visualization with the visualization obtained with the `odgi viz` coloring by depth. -->
+
+## BONUS: Annotation injection
+
+A pangenome graph represents the alignment of many genome sequences.
+By embedding gene annotations into the graph as paths, we align them with all other paths.
+
+We start with gene annotations against the GRCh38 reference.
+Our annotations are against the full `grch38#chr6`, in `test/chr6.C4.bed`.
+Take a look at the first column in the annotation file
+
+    head $HOME/odgi/test/chr6.C4.bed
+
+However, the C4 locus graph `chr6.c4.gfa` is over the reference range, that is `grch38#chr6:31972046-32055647`.
+With `odgi paths` we can take a look at the names of the paths in the graph:
+
+    odgi paths -i $HOME/chr6.pan.C4.sorted.og -L | grep grc
+
+So, we must adjust the annotations to match the subgraph to ensure that path names and coordinates exactly correspond between the BED and GFA.
+We do so using `odgi procbed`, which cuts BED records to fit within a given subgraph:
+
+    odgi procbed -i $HOME/chr6.pan.C4.sorted.og -b $HOME/odgi/test/chr6.C4.bed > $HOME/chr6.C4.adj.bed
+
+The coordinate space now matches that of the C4 subgraph.
+Now, we can inject these annotations into the graph:
+
+    odgi inject -i $HOME/chr6.pan.C4.sorted.og -b $HOME/chr6.C4.adj.bed -o $HOME/chr6.C4.genes.og -P
+
+Use `odgi viz` to visualize the new subgraph with the injected paths.
+
+We now use the gene names and the `gggenes` output format from `odgi untangle` to obtain a gene arrow map. We specify the injected paths as target paths:
+
+    odgi paths -i $HOME/chr6.C4.genes.og -L | tail -4 > $HOME/chr6.C4.gene.names.txt
+
+    odgi untangle -R $HOME/chr6.C4.gene.names.txt -i $HOME/chr6.C4.genes.og -j 0.5 -g -t 16 -P > $HOME/chr6.C4.gene.gggenes.tsv
+
+We use `-j 0.5` to filter out low-quality matches.
+
+If you have `R` installed on your local machine, you can plot `odgi untangle` output with `gggenes`:
+
+    require(ggplot2)
+    require(gggenes)
+    x <- read.delim('$HOME/chr6.C4.gene.gggenes.tsv')
+    ggplot(x, aes(xmin=start, xmax=end, y=molecule, fill=gene, forward=strand)) + geom_gene_arrow()
+    ggsave('c4.gggenes.png', height=14, width=14)
+
+![C4 untangle](images/c4.gggenes.png)
+
+The plot will look a bit odd because some of the paths are in reverse complement orientation relative to the annotations.
+We can clean this up by using `odgi flip`, which flips paths around if they tend to be in the reverse complement orientation relative to the graph:
+
+    odgi flip -i $HOME/chr6.C4.genes.og -o $HOME/chr6.C4.genes.flip.og -t 16 -P
+    
+    odgi untangle -i $HOME/chr6.C4.genes.flip.og -R $HOME/chr6.C4.gene.names.txt -j 0.5 -t 16 -g -P > $HOME/chr6.C4.gene.gggenes.flip.tsv
+
+Plot the new results:
+
+![C4 untangle](images/c4.gggenes.flip.png)
+
+What is changed?
+
+![C4 untangle explained](images/c4.gggenes.flip.explained.png)
