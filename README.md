@@ -40,6 +40,14 @@ Start an interactive session inside the Docker container, mounting your home dir
 
 All the following commands should be run inside this Docker container.
 
+### Note
+
+There is the following shared directory on the cluster:
+
+    /kuhpc/scratch/kucg/pangenome_workshop
+
+It contains the container and the GitHub repositories in the `software/` subdirectory and the rest of the files in the `references/` subdirectory. You can copy the files you need from there to your home directory.
+
 ## HLA pangenome graphs
 
 The [human leukocyte antigen (HLA)](https://en.wikipedia.org/wiki/Human_leukocyte_antigen) system is a complex of genes on chromosome 6 in humans which encode cell-surface proteins responsible for the regulation of the immune system.
