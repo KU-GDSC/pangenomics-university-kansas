@@ -389,7 +389,7 @@ Too many paths. Let's select a representative for each cluster:
 
 ![chr6.C4.impg.all.dendogram.repr](images/chr6.C4.impg.all.dendogram.repr.png)
 
-
+<!-- 
 ## BONUS: Graph untangling
 
 To obtain another view of a collapsed locus, we can apply `odgi untangle` to linearize the relationships between paths.
@@ -405,8 +405,8 @@ Take a look at the `chr6.pan.C4.sorted.untangle.bed` file.
 For each segment in the query (`query.name`, `query.start`, and `query.end` columns), the best match on the reference is reported (`ref.name`, `ref.start`, and `ref.end`),
 with information about the quality of the match (`score`), the strand (`inv`), the copy number status (`self.cov`), and its rank over all possible matches (`n.th`).
 
-<!-- Try to visualize the results with `ggplot2` in R (hint: the intervals in the BED file can be displayed with `geom_segment`).
-Compare such a visualization with the visualization obtained with the `odgi viz` coloring by depth. -->
+Try to visualize the results with `ggplot2` in R (hint: the intervals in the BED file can be displayed with `geom_segment`).
+Compare such a visualization with the visualization obtained with the `odgi viz` coloring by depth. 
 
 ## BONUS: Annotation injection
 
@@ -468,3 +468,4 @@ Plot the new results:
 What is changed?
 
 ![C4 untangle explained](images/c4.gggenes.flip.explained.png)
+-->
