@@ -22,6 +22,16 @@ Phoenix, AZ, USA
 
 ## Getting started
 
+### Note
+
+There is the following shared directory on the cluster:
+
+    /kuhpc/scratch/kucg/pangenome_workshop
+
+It contains the container and the GitHub repositories in the `software/` subdirectory and the rest of the files in the `references/` subdirectory. You can copy the files you need from there to your home directory.
+
+### Software and data
+
 ![pggb workflow](images/pggb-workflow.png)
 
 Pull the `pggb` Docker image, which contains all the tools needed for this workshop (`pggb`, `odgi`, `wfmash`, `seqwish`, `smoothxg`, `bedtools`, `samtools`, and more):
@@ -39,14 +49,6 @@ Start an interactive session inside the Docker container, mounting your home dir
     docker run -it -v $HOME:$HOME -w $HOME -e HOME=$HOME ghcr.io/pangenome/pggb:2026030920022667bf93 /bin/bash
 
 All the following commands should be run inside this Docker container.
-
-### Note
-
-There is the following shared directory on the cluster:
-
-    /kuhpc/scratch/kucg/pangenome_workshop
-
-It contains the container and the GitHub repositories in the `software/` subdirectory and the rest of the files in the `references/` subdirectory. You can copy the files you need from there to your home directory.
 
 ## HLA pangenome graphs
 
