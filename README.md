@@ -119,8 +119,6 @@ Each image follow a different color scheme:
 - `*.viz_O_multiqc.png`: all paths are compressed into a single line, where we color by path coverage.
   ![DRB1-3123 fa gz bf3285f eb0f3d3 9c6ea4f smooth final og viz_O_multiqc](images/DRB1-3123.fa.gz.3d73c94.11fba48.8f32976.smooth.final.og.viz_O_multiqc.png)
 
-Try to visualize the graph also with `Bandage`.
-
 Use `odgi stats` to obtain the graph length, and the number of nodes, edges, and paths:
 
     odgi stats -i $HOME/out_DRB1_3123.1/DRB1-3123.fa.gz.3d73c94.11fba48.8f32976.smooth.final.og -S
@@ -180,9 +178,8 @@ Genetic and epidemiological studies have identified lipoprotein(a) as a risk fac
 Try to make LPA pangenome graphs.
 The input sequences are in `$HOME/pggb/data/LPA/LPA.fa.gz`.
 Sequences in this locus have a peculiarity: which one?
-Hint: visualize the alignments and take a look at the graph layout with `Bandage` and/or in the `*.draw_multiqc.png` files.
+Hint: visualize the alignments and take a look at the graph layout in the `*.draw_multiqc.png` files.
 The `*.draw_multiqc.png` files contain static representations of the graph layout.
-They are similar to what `Bandage` shows, probably a little less attractive, but such visualizations can scale to larger pangenomic graphs.
 
 ## MHC locus
 
