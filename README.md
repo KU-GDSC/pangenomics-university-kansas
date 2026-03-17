@@ -40,9 +40,11 @@ to something resembling this:
 
 ![pggb workflow](images/pggb-workflow.png)
 
-The `pggb` Docker image, which contains all the tools needed for this workshop (`pggb`, `odgi`, `wfmash`, `seqwish`, `smoothxg`, `bedtools`, `samtools`, and more), is on the cluster here
+The `pggb` Docker image, which contains all the tools needed for this workshop (`pggb`, `odgi`, `wfmash`, `seqwish`, `smoothxg`, `bedtools`, `samtools`, and more), is on the cluster, confirm you have access to that directory with:
 
-    /kuhpc/work/kucg/pangenome_workshop/software/docker/ghcr.io-pangenome-pggb-202603141454453ade6b.img
+    ls /kuhpc/work/kucg/pangenome_workshop/software/docker/ghcr.io-pangenome-pggb-202603141454453ade6b.img
+
+If you get a permission denied error, you will need to [request access](https://docs.crc.ku.edu/access/#pre-requisites) to the KUCG user group.
 
 Create a working directory for yourself and then move to that directory 
 
