@@ -26,27 +26,34 @@ Phoenix, AZ, USA
 
 There is the following shared directory on the cluster:
 
-    /kuhpc/scratch/kucg/pangenome_workshop
+    /kuhpc/work/kucg/pangenome_workshop
 
-It contains the container and the GitHub repositories in the `software/` subdirectory and the rest of the files in the `references/` subdirectory. You can copy the files you need from there to your home directory.
+It contains the container and the GitHub repositories in the `software/` subdirectory, the data for alignment in the `data/` subdirectory, and the rest of the files in the `references/` subdirectory. You can copy the files you need from there to a location you want to work in, such as your scratch space.
 
 ### Software and data
 
 ![pggb workflow](images/pggb-workflow.png)
 
-Pull the `pggb` Docker image, which contains all the tools needed for this workshop (`pggb`, `odgi`, `wfmash`, `seqwish`, `smoothxg`, `bedtools`, `samtools`, and more):
+The `pggb` Docker image, which contains all the tools needed for this workshop (`pggb`, `odgi`, `wfmash`, `seqwish`, `smoothxg`, `bedtools`, `samtools`, and more), is on the cluster here
 
-    docker pull ghcr.io/pangenome/pggb:2026030920022667bf93
+    /kuhpc/work/kucg/pangenome_workshop/software/docker/ghcr.io-pangenome-pggb-202603141454453ade6b.img
+
+Create a working directory for yourself and then set a variable for that directory
+
+    mkdir ~/scratch/pangenome_workshop
+    cd ~/scratch/pangenome_workshop
+    WORKDIR="~/scratch/pangenome_workshop"
 
 Clone the `pggb` and `odgi` repositories to get the data files used in this workshop:
 
-    cd $HOME
+    cd $WORKDIR
     git clone https://github.com/pangenome/pggb.git
     git clone https://github.com/pangenome/odgi.git
 
 Start an interactive session inside the Docker container, mounting your home directory:
 
-    docker run -it -v $HOME:$HOME -w $HOME -e HOME=$HOME ghcr.io/pangenome/pggb:2026030920022667bf93 /bin/bash
+    unset -f which
+    apptainer run -e /kuhpc/work/kucg/pangenome_workshop/software/docker/ghcr.io-pangenome-pggb-202603141454453ade6b.img 
 
 All the following commands should be run inside this Docker container.
 
