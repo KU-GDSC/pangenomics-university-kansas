@@ -22,13 +22,19 @@ Phoenix, AZ, USA
 
 ## Getting started
 
-### Note
+### Requesting an interactive compute node
 
-There is the following shared directory on the cluster:
+Before running the commands in this tutorial you should request an interactive compute node with at least 16 GB of memory
 
-    /kuhpc/work/kucg/pangenome_workshop
+    srun --mem=16G --time=2:00:00 --partition=sixhour --pty /bin/bash -l
 
-It contains the container and the GitHub repositories in the `software/` subdirectory, the data for alignment in the `data/` subdirectory, and the rest of the files in the `references/` subdirectory. You can copy the files you need from there to a location you want to work in, such as your scratch space.
+This should cause your prompt from something resembling this:
+
+    [USERNAME@login1 ~]$
+
+to something resembling this:
+
+    [USERNAME@r14r20n01 ~]$
 
 ### Software and data
 
@@ -53,7 +59,17 @@ Start an interactive session inside the Docker container:
     unset -f which
     apptainer run -e /kuhpc/work/kucg/pangenome_workshop/software/docker/ghcr.io-pangenome-pggb-202603141454453ade6b.img 
 
-All the following commands should be run inside this Docker container.
+Now your prompt should have changed from something resembling:
+
+    [USERNAME@r14r20n01 pangenome_workshop]$
+
+to
+
+    Apptainer>
+
+which reflects that you are now running inside the Docker container. All of the following steps in this tutorial should be run from this prompt. Once you are done you can exit the container by typing `exit`.
+
+**Note**: you may see the following warning: `bash: module: command not found`, which should not impact the following steps in this tutorial.
 
 ## HLA pangenome graphs
 
@@ -77,7 +93,11 @@ How many pairwise alignments were used to build the graph (take a look at the `P
 
     paf2dotplot png large out_DRB1_3123.1/*alignments.wfmash.paf
 
-The last command will generate a `out.png` file with a visualization of the alignments.
+The last command will generate a `out.png` file with a visualization of the alignments. To see this file you can copy the file to your local computer in a **new terminal window** (not the one with the `Apptainer>` prompt) using the command `scp` with a command like
+
+    scp USERNAME@hpc.crc.ku.edu:~/scratch/pangenome_workshop/out.png ~/Downloads/out.png
+
+which would download the file to the Downloads directory on your local computer.
 
 ![out_DRB1_3123.1 alignment](images/out.png)
 
@@ -89,7 +109,7 @@ Its outputs are less appealing, but can scale on big alignments.
 
 ![out_DRB1_3123.1 alignment.pafplot](images/DRB1-3123.fa.gz.3d73c94.alignments.wfmash.paf.png)
 
-Take a look at the files in the `out_DRB1_3123.1` folder.
+Take a look at the files in the `out_DRB1_3123.1` folder. You can copy them to your local computer using an `scp` command similar to the one above.
 
 - `*.alignments.wfmash.paf`: sequence alignments;
 - `*.log`: whole log;
@@ -190,12 +210,11 @@ The `*.draw_multiqc.png` files contain static representations of the graph layou
 
 ## MHC locus
 
-Download the HPRC pangenome graph of the human chromosome 6 in GFA format, decompress it, and convert it to a graph in `odgi` format.
+Convert the HPRC pangenome graph of the human chromosome 6 to a graph in `odgi` format.
 
-    cd $WORKDIR
-    wget https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/scratch/2021_11_16_pggb_wgg.88/chroms/chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa.gz
-    gunzip chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa.gz
-    odgi build -g chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa -o chr6.pan.og -t 8 -P
+    odgi build -g /kuhpc/work/kucg/pangenome_workshop/data/chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa -o chr6.pan.og -t 8 -P
+
+(note: this step does not immediately emit status messages but should after a few minutes)
 
 This graph contains contigs of 88 haploid, phased human genome assemblies from 44 individuals, plus the `chm13` and `grch38` reference genomes.
 
@@ -216,6 +235,8 @@ To extract the subgraph containing all the HLA genes annotated in the `chr6.HLA_
 and then execute:
 
     odgi extract -i chr6.pan.og -o chr6.pan.MHC.og -b chr6.interval_to_extract.bed -O -t 8 -P
+
+(note: as above, this command does not immediately emit a status message)
 
 The instruction extracts:
 
@@ -260,19 +281,10 @@ The MHC locus includes the complement component 4 (C4) region, which encodes pro
 In humans, the C4 gene exists as 2 functionally distinct genes, C4A and C4B, which both vary in structure and **copy number** ([Sekar et al., 2016](https://doi.org/10.1038/nature16549)).
 Moreover, C4A and C4B genes segregate in both long and short genomic forms, distinguished by the **presence or absence** of a human endogenous retroviral (HERV) sequence.
 
-Find C4 coordinates:
-
-    cd $WORKDIR
-    wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
-    wget https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/genes/hg38.ncbiRefSeq.gtf.gz
-    zgrep 'gene_id "C4A"\|gene_id "C4B"' hg38.ncbiRefSeq.gtf.gz |
-      awk '$1 == "chr6"' | cut -f 1,4,5 |
-      bedtools sort | bedtools merge -d 15000 | bedtools slop -l 10000 -r 20000 -g hg38.chrom.sizes |
-      sed 's/chr6/grch38#chr6/g' > hg38.ncbiRefSeq.C4.coordinates.bed
-
 Extract the C4 locus:
 
-    odgi extrat -i chr6.pan.og -b hg38.ncbiRefSeq.C4.coordinates.bed -o - -O -t 8 -P | odgi sort -i - -o chr6.pan.C4.sorted.og -p Ygs -x 100 -t 8 --temp-dir $WORKDIR -P
+    mkdir -p tmp
+    odgi extract -i chr6.pan.og -b /kuhpc/work/kucg/pangenome_workshop/data/hg38.ncbiRefSeq.C4.coordinates.bed -o - -O -t 8 -P | odgi sort -i - -o chr6.pan.C4.sorted.og -p Ygs -x 100 -t 8 --temp-dir ./tmp -P
 
 `odgi sort -p Ygs` will apply three different graph sorting algorithms, the same that are used in `pggb`.
 
@@ -317,7 +329,7 @@ Use `odgi layout` and `odgi draw` to compute and visualize the layout of the C4 
 <details>
   <summary>Click me for the answer</summary>
 
-    odgi layout -i chr6.pan.C4.sorted.og -o chr6.pan.C4.sorted.lay -t 8 --temp-dir $WORKDIR -P
+    odgi layout -i chr6.pan.C4.sorted.og -o chr6.pan.C4.sorted.lay -t 8 --temp-dir ./tmp -P
     odgi draw -i chr6.pan.C4.sorted.og -c chr6.pan.C4.sorted.lay -p chr6.pan.C4.sorted.layout.png
 </details>
 
