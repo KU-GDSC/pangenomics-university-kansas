@@ -28,7 +28,7 @@ Before running the commands in this tutorial you should request an interactive c
 
     srun --mem=16G --time=2:00:00 --partition=sixhour --pty /bin/bash -l
 
-This should cause your prompt from something resembling this:
+This should change your prompt from something resembling this:
 
     [USERNAME@login1 ~]$
 
