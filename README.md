@@ -40,9 +40,8 @@ The `pggb` Docker image, which contains all the tools needed for this workshop (
 
 Create a working directory for yourself and then set a variable for that directory
 
-    mkdir ~/scratch/pangenome_workshop
-    cd ~/scratch/pangenome_workshop
-    export WORKDIR="~/scratch/pangenome_workshop"
+    mkdir -p ~/scratch/pangenome_workshop
+    export WORKDIR=~/scratch/pangenome_workshop
 
 Clone the `pggb` and `odgi` repositories to get the data files used in this workshop:
 
