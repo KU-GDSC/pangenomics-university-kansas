@@ -22,33 +22,56 @@ Phoenix, AZ, USA
 
 ## Getting started
 
-### Note
+### Requesting an interactive compute node
 
-There is the following shared directory on the cluster:
+Before running the commands in this tutorial you should request an interactive compute node with at least 16 GB of memory
 
-    /kuhpc/scratch/kucg/pangenome_workshop
+    srun --mem=16G --time=2:00:00 --partition=sixhour --pty /bin/bash -l
 
-It contains the container and the GitHub repositories in the `software/` subdirectory and the rest of the files in the `references/` subdirectory. You can copy the files you need from there to your home directory.
+This should change your prompt from something resembling this:
+
+    [USERNAME@login1 ~]$
+
+to something resembling this:
+
+    [USERNAME@r14r20n01 ~]$
 
 ### Software and data
 
 ![pggb workflow](images/pggb-workflow.png)
 
-Pull the `pggb` Docker image, which contains all the tools needed for this workshop (`pggb`, `odgi`, `wfmash`, `seqwish`, `smoothxg`, `bedtools`, `samtools`, and more):
+The `pggb` Docker image, which contains all the tools needed for this workshop (`pggb`, `odgi`, `wfmash`, `seqwish`, `smoothxg`, `bedtools`, `samtools`, and more), is on the cluster, confirm you have access to that directory with:
 
-    docker pull ghcr.io/pangenome/pggb:2026030920022667bf93
+    ls /kuhpc/work/kucg/pangenome_workshop/software/docker/ghcr.io-pangenome-pggb-202603141454453ade6b.img
+
+If you get a permission denied error, you will need to [request access](https://docs.crc.ku.edu/access/#pre-requisites) to the KUCG user group.
+
+Create a working directory for yourself and then move to that directory 
+
+    mkdir -p ~/scratch/pangenome_workshop
+    cd ~/scratch/pangenome_workshop
 
 Clone the `pggb` and `odgi` repositories to get the data files used in this workshop:
 
-    cd $HOME
     git clone https://github.com/pangenome/pggb.git
     git clone https://github.com/pangenome/odgi.git
 
-Start an interactive session inside the Docker container, mounting your home directory:
+Start an interactive session inside the Docker container:
 
-    docker run -it -v $HOME:$HOME -w $HOME -e HOME=$HOME ghcr.io/pangenome/pggb:2026030920022667bf93 /bin/bash
+    unset -f which
+    apptainer run -e /kuhpc/work/kucg/pangenome_workshop/software/docker/ghcr.io-pangenome-pggb-202603141454453ade6b.img 
 
-All the following commands should be run inside this Docker container.
+Now your prompt should have changed from something resembling:
+
+    [USERNAME@r14r20n01 pangenome_workshop]$
+
+to
+
+    Apptainer>
+
+which reflects that you are now running inside the Docker container. All of the following steps in this tutorial should be run from this prompt. Once you are done you can exit the container by typing `exit`.
+
+**Note**: you may see the following warning: `bash: module: command not found`, which should not impact the following steps in this tutorial.
 
 ## HLA pangenome graphs
 
@@ -56,7 +79,7 @@ The [human leukocyte antigen (HLA)](https://en.wikipedia.org/wiki/Human_leukocyt
 
 Let's build a pangenome graph from a collection of sequences of the DRB1-3123 gene:
 
-    pggb -i $HOME/pggb/data/HLA/DRB1-3123.fa.gz -o $HOME/out_DRB1_3123.1 -n 12
+    pggb -i pggb/data/HLA/DRB1-3123.fa.gz -o out_DRB1_3123.1 -n 12
 
 Why did we specify `-n 12`? What happens if we don't specify it?
 
@@ -70,9 +93,13 @@ This value can be automatically obtained from the sequence names if they respect
 
 How many pairwise alignments were used to build the graph (take a look at the `PAF` output)? Visualize the alignments:
 
-    paf2dotplot png large $HOME/out_DRB1_3123.1/*alignments.wfmash.paf
+    paf2dotplot png large out_DRB1_3123.1/*alignments.wfmash.paf
 
-The last command will generate a `out.png` file with a visualization of the alignments.
+The last command will generate a `out.png` file with a visualization of the alignments. To see this file you can copy the file to your local computer in a **new terminal window** (not the one with the `Apptainer>` prompt) using the command `scp` with a command like
+
+    scp USERNAME@hpc.crc.ku.edu:~/scratch/pangenome_workshop/out.png ~/Downloads/out.png
+
+which would download the file to the Downloads directory on your local computer.
 
 ![out_DRB1_3123.1 alignment](images/out.png)
 
@@ -84,7 +111,7 @@ Its outputs are less appealing, but can scale on big alignments.
 
 ![out_DRB1_3123.1 alignment.pafplot](images/DRB1-3123.fa.gz.3d73c94.alignments.wfmash.paf.png)
 
-Take a look at the files in the `out_DRB1_3123.1` folder.
+Take a look at the files in the `out_DRB1_3123.1` folder. You can copy them to your local computer using an `scp` command similar to the one above.
 
 - `*.alignments.wfmash.paf`: sequence alignments;
 - `*.log`: whole log;
@@ -123,7 +150,7 @@ Each image follow a different color scheme:
 
 Use `odgi stats` to obtain the graph length, and the number of nodes, edges, and paths:
 
-    odgi stats -i $HOME/out_DRB1_3123.1/DRB1-3123.fa.gz.3d73c94.11fba48.8f32976.smooth.final.og -S
+    odgi stats -i out_DRB1_3123.1/DRB1-3123.fa.gz.3d73c94.11fba48.8f32976.smooth.final.og -S
 
 Do you think the resulting pangenome graph represents the input sequences well?
 Check the length and the number of the input sequences to answer this question.
@@ -140,7 +167,7 @@ Pangenome graphs longer than the input sequences are expected because they conta
 `pggb`'s default parameters assume an average divergence of approximately 10% (`-p 90` by default).
 Try building the same pangenome graph by specifying a higher percent identity
 
-    pggb -i $HOME/pggb/data/HLA/DRB1-3123.fa.gz -o $HOME/out_DRB1_3123.2 -n 12 -p 95
+    pggb -i pggb/data/HLA/DRB1-3123.fa.gz -o out_DRB1_3123.2 -n 12 -p 95
 
 Check the graph statistics.
 Does this pangenome graph represent better or worse the input sequences than the previously produced graph?
@@ -155,8 +182,8 @@ This happens because the HLA locus is highly polymorphic in the population, with
 
 Try to increase and decrease the segment length (`-s 5000` by default):
 
-    pggb -i $HOME/pggb/data/HLA/DRB1-3123.fa.gz -o $HOME/out_DRB1_3123.3 -n 12 -s 15000
-    pggb -i $HOME/pggb/data/HLA/DRB1-3123.fa.gz -o $HOME/out_DRB1_3123.4 -n 12 -s 100
+    pggb -i pggb/data/HLA/DRB1-3123.fa.gz -o out_DRB1_3123.3 -n 12 -s 15000
+    pggb -i pggb/data/HLA/DRB1-3123.fa.gz -o out_DRB1_3123.4 -n 12 -s 100
 
 How is this affecting graph statistics?
 
@@ -178,19 +205,18 @@ Choose another HLA gene from the `data` folder (`A-3105.fa.gz` for example) and 
 Genetic and epidemiological studies have identified lipoprotein(a) as a risk factor for atherosclerosis and related diseases, such as coronary heart disease and stroke.
 
 Try to make LPA pangenome graphs.
-The input sequences are in `$HOME/pggb/data/LPA/LPA.fa.gz`.
+The input sequences are in `pggb/data/LPA/LPA.fa.gz`.
 Sequences in this locus have a peculiarity: which one?
 Hint: visualize the alignments and take a look at the graph layout in the `*.draw_multiqc.png` files.
 The `*.draw_multiqc.png` files contain static representations of the graph layout.
 
 ## MHC locus
 
-Download the HPRC pangenome graph of the human chromosome 6 in GFA format, decompress it, and convert it to a graph in `odgi` format.
+Convert the HPRC pangenome graph of the human chromosome 6 to a graph in `odgi` format.
 
-    cd $HOME
-    wget https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/scratch/2021_11_16_pggb_wgg.88/chroms/chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa.gz
-    gunzip chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa.gz
-    odgi build -g $HOME/chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa -o $HOME/chr6.pan.og -t 8 -P
+    odgi build -g /kuhpc/work/kucg/pangenome_workshop/data/chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa -o chr6.pan.og -t 8 -P
+
+(note: this step does not immediately emit status messages but should after a few minutes)
 
 This graph contains contigs of 88 haploid, phased human genome assemblies from 44 individuals, plus the `chm13` and `grch38` reference genomes.
 
@@ -200,17 +226,19 @@ The human MHC is also called the HLA (human leukocyte antigen) complex (often ju
 
 See the coordinates of some HLA genes.
 
-    head $HOME/odgi/test/chr6.HLA_genes.bed -n 5
+    head odgi/test/chr6.HLA_genes.bed -n 5
 
 The coordinates are expressed with respect to the `grch38` reference genome.
 
 To extract the subgraph containing all the HLA genes annotated in the `chr6.HLA_genes.bed` file, let's prepare a BED with a single interval containing all those genes:
 
-    bedtools merge -i $HOME/odgi/test/chr6.HLA_genes.bed -d 10000000 > chr6.interval_to_extract.bed
+    bedtools merge -i odgi/test/chr6.HLA_genes.bed -d 10000000 > chr6.interval_to_extract.bed
 
 and then execute:
 
-    odgi extract -i $HOME/chr6.pan.og -o $HOME/chr6.pan.MHC.og -b $HOME/chr6.interval_to_extract.bed -O -t 8 -P
+    odgi extract -i chr6.pan.og -o chr6.pan.MHC.og -b chr6.interval_to_extract.bed -O -t 8 -P
+
+(note: as above, this command does not immediately emit a status message)
 
 The instruction extracts:
 
@@ -229,7 +257,7 @@ We expect 90 paths in the extracted graph, one for each haplotype.
 
 To visualize the graph, execute:
 
-    odgi viz -i $HOME/chr6.pan.MHC.og -o $HOME/chr6.pan.MHC.png -s '#'
+    odgi viz -i chr6.pan.MHC.og -o chr6.pan.MHC.png -s '#'
 
 The `-s '#'` parameter is to color each haplotype (not each contig) with a different color .
 
@@ -255,39 +283,30 @@ The MHC locus includes the complement component 4 (C4) region, which encodes pro
 In humans, the C4 gene exists as 2 functionally distinct genes, C4A and C4B, which both vary in structure and **copy number** ([Sekar et al., 2016](https://doi.org/10.1038/nature16549)).
 Moreover, C4A and C4B genes segregate in both long and short genomic forms, distinguished by the **presence or absence** of a human endogenous retroviral (HERV) sequence.
 
-Find C4 coordinates:
-
-    cd $HOME
-    wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
-    wget https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/genes/hg38.ncbiRefSeq.gtf.gz
-    zgrep 'gene_id "C4A"\|gene_id "C4B"' hg38.ncbiRefSeq.gtf.gz |
-      awk '$1 == "chr6"' | cut -f 1,4,5 |
-      bedtools sort | bedtools merge -d 15000 | bedtools slop -l 10000 -r 20000 -g hg38.chrom.sizes |
-      sed 's/chr6/grch38#chr6/g' > hg38.ncbiRefSeq.C4.coordinates.bed
-
 Extract the C4 locus:
 
-    odgi extract -i $HOME/chr6.pan.og -b $HOME/hg38.ncbiRefSeq.C4.coordinates.bed -o - -O -t 8 -P | odgi sort -i - -o $HOME/chr6.pan.C4.sorted.og -p Ygs -x 100 -t 8 --temp-dir $HOME -P
+    mkdir -p tmp
+    odgi extract -i chr6.pan.og -b /kuhpc/work/kucg/pangenome_workshop/data/hg38.ncbiRefSeq.C4.coordinates.bed -o - -O -t 8 -P | odgi sort -i - -o chr6.pan.C4.sorted.og -p Ygs -x 100 -t 8 --temp-dir ./tmp -P
 
 `odgi sort -p Ygs` will apply three different graph sorting algorithms, the same that are used in `pggb`.
 
 Regarding the `odgi viz` visualization, select the haplotypes to visualize
 
-    odgi paths -i $HOME/chr6.pan.C4.sorted.og  -L | grep 'chr6\|HG00438\|HG0107\|HG01952' > $HOME/chr6.selected_paths.txt
+    odgi paths -i chr6.pan.C4.sorted.og  -L | grep 'chr6\|HG00438\|HG0107\|HG01952' > chr6.selected_paths.txt
 
 and visualize them
 
     # odgi viz: default mode
-    odgi viz -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.png -p $HOME/chr6.selected_paths.txt
+    odgi viz -i chr6.pan.C4.sorted.og -o chr6.pan.C4.sorted.png -p chr6.selected_paths.txt
 
     # odgi viz: color by strand
-    odgi viz -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.z.png -p $HOME/chr6.selected_paths.txt -z
+    odgi viz -i chr6.pan.C4.sorted.og -o chr6.pan.C4.sorted.z.png -p chr6.selected_paths.txt -z
 
     # odgi viz: color by position
-    odgi viz -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.du.png -p $HOME/chr6.selected_paths.txt -du
+    odgi viz -i chr6.pan.C4.sorted.og -o chr6.pan.C4.sorted.du.png -p chr6.selected_paths.txt -du
 
     # odgi viz: color by depth
-    odgi viz -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.m.png -p $HOME/chr6.selected_paths.txt -m -B Spectral:4
+    odgi viz -i chr6.pan.C4.sorted.og -o chr6.pan.C4.sorted.m.png -p chr6.selected_paths.txt -m -B Spectral:4
 
 ![chr6.pan.C4.sorted.m.png](images/chr6.pan.C4.sorted.m.png)
 
@@ -312,8 +331,8 @@ Use `odgi layout` and `odgi draw` to compute and visualize the layout of the C4 
 <details>
   <summary>Click me for the answer</summary>
 
-    odgi layout -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.lay -t 8 --temp-dir $HOME -P
-    odgi draw -i $HOME/chr6.pan.C4.sorted.og -c $HOME/chr6.pan.C4.sorted.lay -p $HOME/chr6.pan.C4.sorted.layout.png
+    odgi layout -i chr6.pan.C4.sorted.og -o chr6.pan.C4.sorted.lay -t 8 --temp-dir ./tmp -P
+    odgi draw -i chr6.pan.C4.sorted.og -c chr6.pan.C4.sorted.lay -p chr6.pan.C4.sorted.layout.png
 </details>
 
 
@@ -323,16 +342,14 @@ The HERV sequence may be present or absent in the C4 regions across haplotypes: 
 
 ## Implicit pangenomics
 
-Let's download the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) format](https://github.com/AndreaGuarracino/tpa) at [this link](https://drive.google.com/file/d/1TB80ngJJ-aIhpwotb2FM-j0Sna41nWJ7/view?usp=sharing) and the HPRCv2 assemblies in AGC format.
-
-    wget https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/B4174A5F-F20E-4DCF-8470-F8A907B640BC--HPRCv2_0.6.1_pr_agc_submission/HPRC_r2_assemblies_0.6.1.agc
+This analysis will use the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) format](https://github.com/AndreaGuarracino/tpa) from [this link](https://drive.google.com/file/d/1TB80ngJJ-aIhpwotb2FM-j0Sna41nWJ7/view?usp=sharing) and the HPRCv2 assemblies in AGC format.
 
 Then, we can use `impg` to query the alignments to project the C4 locus onto the HPRCv2 assemblies:
 
     # The first time you run it, the command will be a bit slower because it needs to build index files, which will be used for all subsequent queries.
     impg query \
-        -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
-        --sequence-files HPRC_r2_assemblies_0.6.1.agc \
+        -a /kuhpc/work/kucg/pangenome_workshop/data/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
+        --sequence-files /kuhpc/work/kucg/pangenome_workshop/data/HPRC_r2_assemblies_0.6.1.agc \
         -r GRCh38#0#chr6:31972057-32055418 \
         > chr6.C4.impg.bed
 
@@ -340,8 +357,8 @@ We can also extract the sequences of the projected C4 locus:
 
     # We take a subset of the sequences to speed up the process
     impg query \
-      -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
-      --sequence-files HPRC_r2_assemblies_0.6.1.agc \
+      -a /kuhpc/work/kucg/pangenome_workshop/data/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
+      --sequence-files /kuhpc/work/kucg/pangenome_workshop/data/HPRC_r2_assemblies_0.6.1.agc \
       -r GRCh38#0#chr6:31972057-32055418 \
       -o fasta \
       --subset-sequence-list <(sort chr6.C4.impg.bed | head -n 20 | cut -f 1) \
@@ -357,8 +374,8 @@ And then we can build a pangenome graph from the extracted sequences:
 But we are working in integrating explicit pangenome graph construction, so we can directly query the alignments and obtain a pangenome graph in GFA format:
 
     impg query \
-      -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
-      --sequence-files HPRC_r2_assemblies_0.6.1.agc \
+      -a /kuhpc/work/kucg/pangenome_workshop/data/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
+      --sequence-files /kuhpc/work/kucg/pangenome_workshop/data/HPRC_r2_assemblies_0.6.1.agc \
       -r GRCh38#0#chr6:31972057-32055418 \
       -o gfa \
       --subset-sequence-list <(sort chr6.C4.impg.bed | head -n 20 | cut -f 1) \
@@ -367,8 +384,8 @@ But we are working in integrating explicit pangenome graph construction, so we c
 Trying with all sequences (it will take ~15 minutes):
 
     impg query \
-      -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
-      --sequence-files HPRC_r2_assemblies_0.6.1.agc \
+      -a /kuhpc/work/kucg/pangenome_workshop/data/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
+      --sequence-files /kuhpc/work/kucg/pangenome_workshop/data/HPRC_r2_assemblies_0.6.1.agc \
       -r GRCh38#0#chr6:31972057-32055418 \
       -o gfa \
       --sparsify auto \
