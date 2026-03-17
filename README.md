@@ -340,16 +340,14 @@ The HERV sequence may be present or absent in the C4 regions across haplotypes: 
 
 ## Implicit pangenomics
 
-Let's download the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) format](https://github.com/AndreaGuarracino/tpa) at [this link](https://drive.google.com/file/d/1TB80ngJJ-aIhpwotb2FM-j0Sna41nWJ7/view?usp=sharing) and the HPRCv2 assemblies in AGC format.
-
-    wget https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/B4174A5F-F20E-4DCF-8470-F8A907B640BC--HPRCv2_0.6.1_pr_agc_submission/HPRC_r2_assemblies_0.6.1.agc
+This analysis will use the HPRCv2-vs-GRCh38 alignments in [TracePoint Alignment (TPA) format](https://github.com/AndreaGuarracino/tpa) from [this link](https://drive.google.com/file/d/1TB80ngJJ-aIhpwotb2FM-j0Sna41nWJ7/view?usp=sharing) and the HPRCv2 assemblies in AGC format.
 
 Then, we can use `impg` to query the alignments to project the C4 locus onto the HPRCv2 assemblies:
 
     # The first time you run it, the command will be a bit slower because it needs to build index files, which will be used for all subsequent queries.
     impg query \
-        -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
-        --sequence-files HPRC_r2_assemblies_0.6.1.agc \
+        -a /kuhpc/work/kucg/pangenome_workshop/data/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
+        --sequence-files /kuhpc/work/kucg/pangenome_workshop/data/HPRC_r2_assemblies_0.6.1.agc \
         -r GRCh38#0#chr6:31972057-32055418 \
         > chr6.C4.impg.bed
 
@@ -357,8 +355,8 @@ We can also extract the sequences of the projected C4 locus:
 
     # We take a subset of the sequences to speed up the process
     impg query \
-      -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
-      --sequence-files HPRC_r2_assemblies_0.6.1.agc \
+      -a /kuhpc/work/kucg/pangenome_workshop/data/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
+      --sequence-files /kuhpc/work/kucg/pangenome_workshop/data/HPRC_r2_assemblies_0.6.1.agc \
       -r GRCh38#0#chr6:31972057-32055418 \
       -o fasta \
       --subset-sequence-list <(sort chr6.C4.impg.bed | head -n 20 | cut -f 1) \
@@ -374,8 +372,8 @@ And then we can build a pangenome graph from the extracted sequences:
 But we are working in integrating explicit pangenome graph construction, so we can directly query the alignments and obtain a pangenome graph in GFA format:
 
     impg query \
-      -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
-      --sequence-files HPRC_r2_assemblies_0.6.1.agc \
+      -a /kuhpc/work/kucg/pangenome_workshop/data/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
+      --sequence-files /kuhpc/work/kucg/pangenome_workshop/data/HPRC_r2_assemblies_0.6.1.agc \
       -r GRCh38#0#chr6:31972057-32055418 \
       -o gfa \
       --subset-sequence-list <(sort chr6.C4.impg.bed | head -n 20 | cut -f 1) \
@@ -384,8 +382,8 @@ But we are working in integrating explicit pangenome graph construction, so we c
 Trying with all sequences (it will take ~15 minutes):
 
     impg query \
-      -a GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
-      --sequence-files HPRC_r2_assemblies_0.6.1.agc \
+      -a /kuhpc/work/kucg/pangenome_workshop/data/GCA_000001405.15_GRCh38_no_alt_analysis_set.PanSN.merged.edit-distance.128.tpa \
+      --sequence-files /kuhpc/work/kucg/pangenome_workshop/data/HPRC_r2_assemblies_0.6.1.agc \
       -r GRCh38#0#chr6:31972057-32055418 \
       -o gfa \
       --sparsify auto \
