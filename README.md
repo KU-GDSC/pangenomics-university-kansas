@@ -42,7 +42,7 @@ Create a working directory for yourself and then set a variable for that directo
 
     mkdir ~/scratch/pangenome_workshop
     cd ~/scratch/pangenome_workshop
-    WORKDIR="~/scratch/pangenome_workshop"
+    export WORKDIR="~/scratch/pangenome_workshop"
 
 Clone the `pggb` and `odgi` repositories to get the data files used in this workshop:
 
@@ -63,7 +63,7 @@ The [human leukocyte antigen (HLA)](https://en.wikipedia.org/wiki/Human_leukocyt
 
 Let's build a pangenome graph from a collection of sequences of the DRB1-3123 gene:
 
-    pggb -i $HOME/pggb/data/HLA/DRB1-3123.fa.gz -o $HOME/out_DRB1_3123.1 -n 12
+    pggb -i $WORKDIR/pggb/data/HLA/DRB1-3123.fa.gz -o $WORKDIR/out_DRB1_3123.1 -n 12
 
 Why did we specify `-n 12`? What happens if we don't specify it?
 
@@ -77,7 +77,7 @@ This value can be automatically obtained from the sequence names if they respect
 
 How many pairwise alignments were used to build the graph (take a look at the `PAF` output)? Visualize the alignments:
 
-    paf2dotplot png large $HOME/out_DRB1_3123.1/*alignments.wfmash.paf
+    paf2dotplot png large $WORKDIR/out_DRB1_3123.1/*alignments.wfmash.paf
 
 The last command will generate a `out.png` file with a visualization of the alignments.
 
@@ -130,7 +130,7 @@ Each image follow a different color scheme:
 
 Use `odgi stats` to obtain the graph length, and the number of nodes, edges, and paths:
 
-    odgi stats -i $HOME/out_DRB1_3123.1/DRB1-3123.fa.gz.3d73c94.11fba48.8f32976.smooth.final.og -S
+    odgi stats -i $WORKDIR/out_DRB1_3123.1/DRB1-3123.fa.gz.3d73c94.11fba48.8f32976.smooth.final.og -S
 
 Do you think the resulting pangenome graph represents the input sequences well?
 Check the length and the number of the input sequences to answer this question.
@@ -147,7 +147,7 @@ Pangenome graphs longer than the input sequences are expected because they conta
 `pggb`'s default parameters assume an average divergence of approximately 10% (`-p 90` by default).
 Try building the same pangenome graph by specifying a higher percent identity
 
-    pggb -i $HOME/pggb/data/HLA/DRB1-3123.fa.gz -o $HOME/out_DRB1_3123.2 -n 12 -p 95
+    pggb -i $WORKDIR/pggb/data/HLA/DRB1-3123.fa.gz -o $WORKDIR/out_DRB1_3123.2 -n 12 -p 95
 
 Check the graph statistics.
 Does this pangenome graph represent better or worse the input sequences than the previously produced graph?
@@ -162,8 +162,8 @@ This happens because the HLA locus is highly polymorphic in the population, with
 
 Try to increase and decrease the segment length (`-s 5000` by default):
 
-    pggb -i $HOME/pggb/data/HLA/DRB1-3123.fa.gz -o $HOME/out_DRB1_3123.3 -n 12 -s 15000
-    pggb -i $HOME/pggb/data/HLA/DRB1-3123.fa.gz -o $HOME/out_DRB1_3123.4 -n 12 -s 100
+    pggb -i $WORKDIR/pggb/data/HLA/DRB1-3123.fa.gz -o $WORKDIR/out_DRB1_3123.3 -n 12 -s 15000
+    pggb -i $WORKDIR/pggb/data/HLA/DRB1-3123.fa.gz -o $WORKDIR/out_DRB1_3123.4 -n 12 -s 100
 
 How is this affecting graph statistics?
 
@@ -185,7 +185,7 @@ Choose another HLA gene from the `data` folder (`A-3105.fa.gz` for example) and 
 Genetic and epidemiological studies have identified lipoprotein(a) as a risk factor for atherosclerosis and related diseases, such as coronary heart disease and stroke.
 
 Try to make LPA pangenome graphs.
-The input sequences are in `$HOME/pggb/data/LPA/LPA.fa.gz`.
+The input sequences are in `$WORKDIR/pggb/data/LPA/LPA.fa.gz`.
 Sequences in this locus have a peculiarity: which one?
 Hint: visualize the alignments and take a look at the graph layout in the `*.draw_multiqc.png` files.
 The `*.draw_multiqc.png` files contain static representations of the graph layout.
@@ -194,10 +194,10 @@ The `*.draw_multiqc.png` files contain static representations of the graph layou
 
 Download the HPRC pangenome graph of the human chromosome 6 in GFA format, decompress it, and convert it to a graph in `odgi` format.
 
-    cd $HOME
+    cd $WORKDIR
     wget https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/scratch/2021_11_16_pggb_wgg.88/chroms/chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa.gz
     gunzip chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa.gz
-    odgi build -g $HOME/chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa -o $HOME/chr6.pan.og -t 8 -P
+    odgi build -g $WORKDIR/chr6.pan.fa.a2fb268.4030258.6a1ecc2.smooth.gfa -o $WORKDIR/chr6.pan.og -t 8 -P
 
 This graph contains contigs of 88 haploid, phased human genome assemblies from 44 individuals, plus the `chm13` and `grch38` reference genomes.
 
@@ -207,17 +207,17 @@ The human MHC is also called the HLA (human leukocyte antigen) complex (often ju
 
 See the coordinates of some HLA genes.
 
-    head $HOME/odgi/test/chr6.HLA_genes.bed -n 5
+    head $WORKDIR/odgi/test/chr6.HLA_genes.bed -n 5
 
 The coordinates are expressed with respect to the `grch38` reference genome.
 
 To extract the subgraph containing all the HLA genes annotated in the `chr6.HLA_genes.bed` file, let's prepare a BED with a single interval containing all those genes:
 
-    bedtools merge -i $HOME/odgi/test/chr6.HLA_genes.bed -d 10000000 > chr6.interval_to_extract.bed
+    bedtools merge -i $WORKDIR/odgi/test/chr6.HLA_genes.bed -d 10000000 > chr6.interval_to_extract.bed
 
 and then execute:
 
-    odgi extract -i $HOME/chr6.pan.og -o $HOME/chr6.pan.MHC.og -b $HOME/chr6.interval_to_extract.bed -O -t 8 -P
+    odgi extract -i $WORKDIR/chr6.pan.og -o $WORKDIR/chr6.pan.MHC.og -b $WORKDIR/chr6.interval_to_extract.bed -O -t 8 -P
 
 The instruction extracts:
 
@@ -236,7 +236,7 @@ We expect 90 paths in the extracted graph, one for each haplotype.
 
 To visualize the graph, execute:
 
-    odgi viz -i $HOME/chr6.pan.MHC.og -o $HOME/chr6.pan.MHC.png -s '#'
+    odgi viz -i $WORKDIR/chr6.pan.MHC.og -o $WORKDIR/chr6.pan.MHC.png -s '#'
 
 The `-s '#'` parameter is to color each haplotype (not each contig) with a different color .
 
@@ -264,7 +264,7 @@ Moreover, C4A and C4B genes segregate in both long and short genomic forms, dist
 
 Find C4 coordinates:
 
-    cd $HOME
+    cd $WORKDIR
     wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
     wget https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/genes/hg38.ncbiRefSeq.gtf.gz
     zgrep 'gene_id "C4A"\|gene_id "C4B"' hg38.ncbiRefSeq.gtf.gz |
@@ -274,27 +274,27 @@ Find C4 coordinates:
 
 Extract the C4 locus:
 
-    odgi extract -i $HOME/chr6.pan.og -b $HOME/hg38.ncbiRefSeq.C4.coordinates.bed -o - -O -t 8 -P | odgi sort -i - -o $HOME/chr6.pan.C4.sorted.og -p Ygs -x 100 -t 8 --temp-dir $HOME -P
+    odgi extrat -i $WORKDIR/chr6.pan.og -b $WORKDIR/hg38.ncbiRefSeq.C4.coordinates.bed -o - -O -t 8 -P | odgi sort -i - -o $WORKDIR/chr6.pan.C4.sorted.og -p Ygs -x 100 -t 8 --temp-dir $WORKDIR -P
 
 `odgi sort -p Ygs` will apply three different graph sorting algorithms, the same that are used in `pggb`.
 
 Regarding the `odgi viz` visualization, select the haplotypes to visualize
 
-    odgi paths -i $HOME/chr6.pan.C4.sorted.og  -L | grep 'chr6\|HG00438\|HG0107\|HG01952' > $HOME/chr6.selected_paths.txt
+    odgi paths -i $WORKDIR/chr6.pan.C4.sorted.og  -L | grep 'chr6\|HG00438\|HG0107\|HG01952' > $WORKDIR/chr6.selected_paths.txt
 
 and visualize them
 
     # odgi viz: default mode
-    odgi viz -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.png -p $HOME/chr6.selected_paths.txt
+    odgi viz -i $WORKDIR/chr6.pan.C4.sorted.og -o $WORKDIR/chr6.pan.C4.sorted.png -p $WORKDIR/chr6.selected_paths.txt
 
     # odgi viz: color by strand
-    odgi viz -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.z.png -p $HOME/chr6.selected_paths.txt -z
+    odgi viz -i $WORKDIR/chr6.pan.C4.sorted.og -o $WORKDIR/chr6.pan.C4.sorted.z.png -p $WORKDIR/chr6.selected_paths.txt -z
 
     # odgi viz: color by position
-    odgi viz -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.du.png -p $HOME/chr6.selected_paths.txt -du
+    odgi viz -i $WORKDIR/chr6.pan.C4.sorted.og -o $WORKDIR/chr6.pan.C4.sorted.du.png -p $WORKDIR/chr6.selected_paths.txt -du
 
     # odgi viz: color by depth
-    odgi viz -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.m.png -p $HOME/chr6.selected_paths.txt -m -B Spectral:4
+    odgi viz -i $WORKDIR/chr6.pan.C4.sorted.og -o $WORKDIR/chr6.pan.C4.sorted.m.png -p $WORKDIR/chr6.selected_paths.txt -m -B Spectral:4
 
 ![chr6.pan.C4.sorted.m.png](images/chr6.pan.C4.sorted.m.png)
 
@@ -319,8 +319,8 @@ Use `odgi layout` and `odgi draw` to compute and visualize the layout of the C4 
 <details>
   <summary>Click me for the answer</summary>
 
-    odgi layout -i $HOME/chr6.pan.C4.sorted.og -o $HOME/chr6.pan.C4.sorted.lay -t 8 --temp-dir $HOME -P
-    odgi draw -i $HOME/chr6.pan.C4.sorted.og -c $HOME/chr6.pan.C4.sorted.lay -p $HOME/chr6.pan.C4.sorted.layout.png
+    odgi layout -i $WORKDIR/chr6.pan.C4.sorted.og -o $WORKDIR/chr6.pan.C4.sorted.lay -t 8 --temp-dir $WORKDIR -P
+    odgi draw -i $WORKDIR/chr6.pan.C4.sorted.og -c $WORKDIR/chr6.pan.C4.sorted.lay -p $WORKDIR/chr6.pan.C4.sorted.layout.png
 </details>
 
 
